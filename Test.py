@@ -20,7 +20,6 @@ FPS = 10
 
 Black = (0, 0, 0)
 Gray = (180, 180, 180)
-screen.fill(Gray)
 
 Cell_Qty = 20 #Кол-во полей в ряду
 
@@ -30,6 +29,8 @@ for row in range (Cell_Qty):
 	for col in range (Cell_Qty):
 		button_rect = pg.Rect(col * button_size[0], row * button_size[1], *button_size)
 		button_rects.append(button_rect)
+
+button_states = [True] * len(button_rects)
 '''for row in range(Cell_Qty): #Для каждого ряда
 	button_rect.y = row
 	for colum in range(Cell_Qty):
@@ -43,18 +44,30 @@ for row in range (Cell_Qty):
 		screen.blit(number, (colum*Cell_size+Cell_Qty//2, row*Cell_size+Cell_Qty//2))
 			'''
 
-for index in button_rects:
-	screen.blit(button_image, index)
+'''for index in button_rects:
+	screen.blit(button_image, index)'''
 
 run = True
 while run:
-	pg.display.update()
 	for event in pg.event.get():
 		if event.type == pg.QUIT:
-			pg.quit()
 			run = False
-		'''if event.type == pg.MOUSEBUTTONDOWN:
-			if event.button == 1:
-				number = FNT18.render(str(random.randint(0, 5)), 1, Black)
+		if event.type == pg.MOUSEBUTTONDOWN:
+			for i, index in enumerate(button_rects):
+				if index.collidepoint(event.pos) and button_states[i]:
+					button_states[i] = False
+				'''number = FNT18.render(str(random.randint(0, 5)), 1, Black)
 				screen.blit(number, (event.pos[0], event.pos[1]))'''
+	
+	screen.fill(Gray)
+
+	for i, index in enumerate(button_rects):
+		if button_states[i]:
+			screen.blit(button_image, index)
+
+	pg.display.flip()
+
 	clock.tick(FPS)
+
+pg.quit()
+
