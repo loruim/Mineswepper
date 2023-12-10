@@ -1,8 +1,5 @@
 import pygame as pg
-import random 
 from random import shuffle
-
-#from pygame.sprite import _Group
 
 pg.init()
 
@@ -33,13 +30,45 @@ for row in range (Cell_Qty):
 		button_rects.append(button_rect)
 
 button_states = [True] * len(button_rects)
+
+#Добавление флага
+original_flag = pg.image.load("image/flag.png")
+flag_size = (Window_size[0]/Cell_Qty, Window_size[1]/Cell_Qty)
+flag = pg.transform.scale(original_flag, flag_size)
+flag_states = [True] * len(button_rects)
+
 copy_button_rects = button_rects.copy()
 shuffle(copy_button_rects)
 copy_button_slice = copy_button_rects[:int(len(button_rects)*0.2)]
-print(copy_button_slice)
 
 clock = pg.time.Clock()
 FPS = 10
+
+count_list =[]
+for index in button_rects:
+	count = 0
+	x_coord = index[0]
+	y_coord = index[1]
+	for index_b in copy_button_slice:
+		if [x_coord, y_coord] == [index_b[0], index_b[1]]:
+			pass
+		if [x_coord, y_coord+40] == [index_b[0], index_b[1]]: #Снизу
+			count += 1
+		if [x_coord, y_coord-40] == [index_b[0], index_b[1]]: #Сверху
+			count += 1
+		if [x_coord+40, y_coord] == [index_b[0], index_b[1]]: #Справа
+			count += 1
+		if [x_coord-40, y_coord] == [index_b[0], index_b[1]]: #Слева
+			count += 1
+		if [x_coord+40, y_coord+40] == [index_b[0], index_b[1]]: #Правый нижний угол
+			count += 1
+		if [x_coord+40, y_coord-40] == [index_b[0], index_b[1]]: #Правый верхний угол
+			count += 1
+		if [x_coord-40, y_coord+40] == [index_b[0], index_b[1]]: #Левый нижний угол
+			count += 1
+		if [x_coord-40, y_coord-40] == [index_b[0], index_b[1]]: #Левый верхний угол
+			count += 1
+	count_list.append(count)
 
 run = True
 while run:
@@ -52,20 +81,24 @@ while run:
 					if index.collidepoint(event.pos) and button_states[i]:
 						button_states[i] = False
 						pg.draw.rect(screen, Gray, index)
-						number = FNT18.render(str(random.randint(0, 8)), True, Black)
+						number = FNT18.render(str(count_list[i]), True, Black)
 						screen.blit(number, index.center)
+			if event.button == 3:
+				for i, index in enumerate(button_rects):
+					if index.collidepoint(event.pos) and button_states[i]:
+						screen.blit(flag, index)
+						flag_states[i] = False
 				
 	for i, index in enumerate(copy_button_slice):
-		screen.blit(bomb_image, index)
-
+		if flag_states[i]:
+			screen.blit(bomb_image, index)
 
 	for i, index in enumerate(button_rects):
-		if button_states[i]:
-			screen.blit(button_image, index)		
+		if button_states[i] and flag_states[i]:
+			screen.blit(button_image, index)
 
 	pg.display.flip()
 
 	clock.tick(FPS)
 
 pg.quit()
-
