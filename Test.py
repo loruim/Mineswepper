@@ -22,12 +22,21 @@ button_size = (Window_size[0]/Cell_Qty, Window_size[1]/Cell_Qty)
 button_image = pg.transform.scale(original_button_image, button_size)
 button_rects = []
 
+#Бомбы
+original_bomb_image = pg.image.load("image/bomb.png")
+bomb_size = (Window_size[0]/Cell_Qty, Window_size[1]/Cell_Qty)
+bomb_image = pg.transform.scale(original_bomb_image, bomb_size)
+
 for row in range (Cell_Qty):
 	for col in range (Cell_Qty):
 		button_rect = pg.Rect(col * button_size[0], row * button_size[1], *button_size)
 		button_rects.append(button_rect)
 
 button_states = [True] * len(button_rects)
+copy_button_rects = button_rects.copy()
+shuffle(copy_button_rects)
+copy_button_slice = copy_button_rects[:int(len(button_rects)*0.2)]
+print(copy_button_slice)
 
 clock = pg.time.Clock()
 FPS = 10
@@ -46,10 +55,13 @@ while run:
 						number = FNT18.render(str(random.randint(0, 8)), True, Black)
 						screen.blit(number, index.center)
 				
+	for i, index in enumerate(copy_button_slice):
+		screen.blit(bomb_image, index)
+
 
 	for i, index in enumerate(button_rects):
 		if button_states[i]:
-			screen.blit(button_image, index)
+			screen.blit(button_image, index)		
 
 	pg.display.flip()
 
