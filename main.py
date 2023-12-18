@@ -1,4 +1,5 @@
 import pygame as pg
+import time
 from random import shuffle
 
 pg.init()
@@ -39,8 +40,6 @@ def number_spawn(Cells):
     flag_states = [True] * len(button_rects)
     return button_rects, button_states, flag_states
 
-#number = number_spawn(Cell)
-
 #Добавление флага
 original_flag = pg.image.load("image/flag.png")
 flag_size = (40, 40)
@@ -57,8 +56,8 @@ def get_shuffled_slice(original_list):
     copy_list = original_list.copy()
     shuffle(copy_list)
     sliced_copy = copy_list[:int(len(original_list)*0.2)]
-    print(sliced_copy)
-    return sliced_copy
+    not_minus = len(original_list) - len(sliced_copy)
+    return sliced_copy, not_minus
 
 clock = pg.time.Clock()
 FPS = 10
@@ -91,17 +90,23 @@ def count_neighbors(original_list, sliced_list):
                 count += 1
 
         count_list.append(count)
+        print(count_list)
 
     return count_list
 
 game_menu = True
 game_run = True
 game_end = True
+game_win = False
+Winner_state = []
 
-def run_game(button_rects, button_states, copy_button_slice, count_list, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag, screen):
+def run_game(button_rects, button_states, not_minus, count_list, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag, screen):
     global game_run
     global game_end
+    global game_win
     global clock
+    global Winner_state
+    start_time = time.time()
 
     while game_run:
         for event in pg.event.get():
@@ -120,6 +125,21 @@ def run_game(button_rects, button_states, copy_button_slice, count_list, bomb_im
                                 screen.blit(bomb_image, index)
                                 button_states = list(map(lambda x: False, button_states))
                                 game_run = False
+                            if button_states[i] == False and count_list[i] >= 0:
+                                Winner_state.append(0)
+                                if len(Winner_state) == not_minus:
+                                    game_win = True
+                                    game_end = False
+                                    end_time = time.time()
+                                    execution_time = end_time - start_time
+                                    with open("result.txt", "a") as f:
+                                        if len(button_rects) == 81:
+                                            f.write(f"game\ngame time - {execution_time}\nComplexity - light")
+                                        if len(button_rects) == 255:
+                                            f.write(f"game number\ngame time - {execution_time}\nComplexity - middle")
+                                        if len(button_rects) == 400:
+                                            f.write(f"game number\ngame time - {execution_time}\nComplexity - hard")
+                                    game_run = False
                 if event.button == 3:
                     for i, index in enumerate(button_rects):
                         if index.collidepoint(event.pos) and button_states[i]:
@@ -144,16 +164,16 @@ while game_menu:
         Start_message = FNT_restart.render("Start", True, Cian)
         Setting_message = FNT_text.render("Setting", True, Black)
         quit1_message = FNT_quit.render("Quit", True, Black)
+        history = FNT_text.render("History", True, Black)
         Start_rect = Start_message.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
+        history_rect = history.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
         #Настройки
-        Setting_message_rect = Setting_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
+        Setting_message_rect = Setting_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +120))
         #Сложность
         Complexity = FNT_text.render("Complexity:", True, Black)
         light = FNT_text.render("Light", True, Black)
         medium = FNT_text.render("Medium", True, Black)
         hard = FNT_text.render("Hard", True, Black)
-        #Музыка
-        Music = FNT_text.render("Light", True, Black)
         #Назад
         Back = FNT_text.render("Back", True, Black)
         #
@@ -163,10 +183,11 @@ while game_menu:
         hard_rect = hard.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4+20, Window[0][1]//2-Window[0][1]//4 +160))
         Back_rect = Back.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +200))
 		##################
-        quit1_message_rect = quit1_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +120))
+        quit1_message_rect = quit1_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +160))
         Window[1].blit(Saper_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
         Window[1].blit(Start_message, Start_rect)
         Window[1].blit(Setting_message, Setting_message_rect)
+        Window[1].blit(history, history_rect)
         Window[1].blit(quit1_message, quit1_message_rect)
         pg.display.flip()
         clock.tick(FPS)
@@ -186,9 +207,13 @@ while game_menu:
                     Cell = Cell_quantity(Window[0][0])
                     number = number_spawn(Cell)
                     copy_button_slice_c = get_shuffled_slice(number[0])
-                    count_list_c = count_neighbors(number[0], copy_button_slice_c)
-                    run_game(number[0], number[1], copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
+                    count_list_c = count_neighbors(number[0], copy_button_slice_c[0])
+                    run_game(number[0], number[1], copy_button_slice_c[1], count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
                     game_menu = False
+                if history_rect.collidepoint(event.pos):
+                    with open("result.txt", "r") as f:
+                        content = f.read()
+                        print(content)
                 if Setting_message_rect.collidepoint(event.pos):
                     Window[1].fill(Gray)
                     Window[1].blit(Setting_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
@@ -208,6 +233,9 @@ while game_menu:
                                 wait += 1
                             if event.type == pg.MOUSEBUTTONDOWN:
                                 if event.button == 1:
+                                    if Back_rect.collidepoint(event.pos):
+                                        spawn = 0
+                                        wait += 1
                                     if light_rect.collidepoint(event.pos):
                                         Window = Windows(360, 360)
                                         Cell = Cell_quantity(Window[0][0])
@@ -230,19 +258,19 @@ while game_menu:
 eteration = 1
 while game_end:
     if eteration == 1:
-        count_spawn = 0
-        if count_spawn == 0:
-            Window[1].fill(Gray)
-            lose_message = FNT_text.render("You defeat!", True, Black)
-            restart_label = FNT_restart.render("Restart", True, Cian)
-            quit2_message = FNT_quit.render("Quit", True, Black)
-            restart_label_rect = restart_label.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
-            quit2_message_rect = quit2_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
-            Window[1].blit(lose_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
-            Window[1].blit(restart_label, restart_label_rect)
-            Window[1].blit(quit2_message, quit2_message_rect)
-            pg.display.flip()
-            clock.tick(FPS)
+        #count_spawn = 0
+        #if count_spawn == 0:
+        Window[1].fill(Gray)
+        lose_message = FNT_text.render("You defeat!", True, Black)
+        restart_label = FNT_restart.render("Restart", True, Cian)
+        quit2_message = FNT_quit.render("Quit", True, Black)
+        restart_label_rect = restart_label.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
+        quit2_message_rect = quit2_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
+        Window[1].blit(lose_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
+        Window[1].blit(restart_label, restart_label_rect)
+        Window[1].blit(quit2_message, quit2_message_rect)
+        pg.display.flip()
+        clock.tick(FPS)
 
     eteration += 1
 
@@ -260,7 +288,44 @@ while game_end:
                     Cell = Cell_quantity(Window[0][0])
                     number = number_spawn(Cell)
                     copy_button_slice_c = get_shuffled_slice(number[0])
-                    count_list_c = count_neighbors(number[0], copy_button_slice_c)
-                    run_game(number[0], number[1], copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
+                    count_list_c = count_neighbors(number[0], copy_button_slice_c[0])
+                    Winner_state = []
+                    run_game(number[0], number[1], copy_button_slice_c[1], count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
+
+while game_win:
+    if eteration == 1:
+        #count_spawn = 0
+        #if count_spawn == 0:
+        Window[1].fill(Gray)
+        Win_message = FNT_text.render("You WIN!", True, Black)
+        new_game_label = FNT_restart.render("New game", True, Cian)
+        quit3_message = FNT_quit.render("Quit", True, Black)
+        new_game_label_rect = new_game_label.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
+        quit3_message_rect = quit3_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
+        Window[1].blit(Win_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
+        Window[1].blit(new_game_label, new_game_label_rect)
+        Window[1].blit(quit3_message, quit3_message_rect)
+        pg.display.flip()
+        clock.tick(FPS)
+
+    eteration += 1
+
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            game_win = False
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if quit3_message_rect.collidepoint(event.pos):
+                    game_win = False
+                if new_game_label_rect.collidepoint(event.pos):
+                    Window[1].fill(Black)
+                    eteration = 1
+                    game_run = True
+                    Cell = Cell_quantity(Window[0][0])
+                    number = number_spawn(Cell)
+                    copy_button_slice_c = get_shuffled_slice(number[0])
+                    count_list_c = count_neighbors(number[0], copy_button_slice_c[0])
+                    Winner_state = []
+                    run_game(number[0], number[1], copy_button_slice_c[1], count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
 
 pg.quit()
