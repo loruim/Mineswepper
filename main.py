@@ -5,6 +5,15 @@ from random import shuffle
 pg.init()
 
 def Windows(Height, Width):
+    """Создает и возвращает размеры окна по высоте Height и ширине Width, также создает и возвращает поверхность screen
+    :param Height: height
+    :type Height: int
+    :param Width: width
+    :type Width: int
+    :results Window_size: tuple of Height and Width
+    :rtype Window_size: tuple
+    :result screen: visible field
+    :rtype screen: pygame.surface.Surface"""
     Window_size = (Height, Width)
     screen = pg.display.set_mode(Window_size)
     pg.display.set_caption('Saper')
@@ -16,9 +25,13 @@ Cian = (20, 137, 184)
 Gray = (180, 180, 180)
 
 def Cell_quantity(Size):
+    """Возвращает количество клеток в ряду/стобце
+    :param Size: size window
+    :type Size: int
+    :returns: integer division of Size by cell length/width
+    :rtype: int"""
     Cell_Qty = Size // 40
-    return Cell_Qty #Кол-во полей в ряду
-#Cell = Cell_quantity(Window[0][0])
+    return Cell_Qty
 
 #Создание кнопки
 original_button_image = pg.image.load("image/empty_button.png")
@@ -31,6 +44,15 @@ bomb_size = (40, 40)
 bomb_image = pg.transform.scale(original_bomb_image, bomb_size)
 
 def number_spawn(Cells):
+    """Создает каждую кнопку как обьект Rect, после помещает эти кнопки в список button_rects и возвращает его, создает два списка длиной button_rects со значениями True
+    :param Cells: number of cells
+    :type Cells: int
+    :returns button_rects: list Cells*Cells with button coordinates
+    :rtype button_rects: list
+    :returns button_states: list [True] Cells*Cells
+    :rtype button_states: list
+    :returns flag_states: list [True] Cells*Cells
+    :rtype flag_states: list"""
     button_rects = []
     for row in range (Cells):
         for col in range (Cells):
@@ -47,12 +69,16 @@ flag = pg.transform.scale(original_flag, flag_size)
 
 #Сообщения проигрыша
 FNT_number = pg.font.Font(pg.font.get_default_font(), 20)
-FNT_text = pg.font.Font(pg.font.get_default_font(), Window[0][0]//20)
-FNT_restart = pg.font.Font(pg.font.get_default_font(), Window[0][0]//20)
-FNT_quit = pg.font.Font(pg.font.get_default_font(), Window[0][0]//20)
-FNT_start = pg.font.Font(pg.font.get_default_font(), Window[0][0]//20)
+FNT = pg.font.Font(pg.font.get_default_font(), Window[0][0]//20)
 
 def get_shuffled_slice(original_list):
+    """Создает копию кортежа с координатами кнопок, перемешивает его и уберает 80% последних значений - это мины, также определяет количество клеток не являющихся минами
+    :param original_list: cell coordinates
+    :type original_list: list
+    :returns sliced_copy: 20% of mixed original_list
+    :rtype sliced_copy: list
+    :returns not_minus: length original_list - length sliced_copy
+    :rtype not_minus: int"""
     copy_list = original_list.copy()
     shuffle(copy_list)
     sliced_copy = copy_list[:int(len(original_list)*0.2)]
@@ -63,6 +89,13 @@ clock = pg.time.Clock()
 FPS = 10
 
 def count_neighbors(original_list, sliced_list):
+    """Считает количество мин вокруг клеток, если клетка и есть мина, присваевает ей отрицательное значение
+    :param original_list: cell coordinates
+    :type original_list: list
+    :param sliced_list: 20% of mixed original_list
+    :type sliced_list: list
+    :returns: number for each cell
+    :rtype: list"""
     count_list = []
 
     for index in original_list:
@@ -90,7 +123,6 @@ def count_neighbors(original_list, sliced_list):
                 count += 1
 
         count_list.append(count)
-        print(count_list)
 
     return count_list
 
@@ -101,6 +133,33 @@ game_win = False
 Winner_state = []
 
 def run_game(button_rects, button_states, not_minus, count_list, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag, screen):
+    """Основной цикл игры - генерация клеток, цифр, бомб, также проверка условий победы и запись отчета при победе
+    :param button_rects: cell coordinates
+    :type button_rects: list
+    :param button_states: index of each cell
+    :type button_states: list
+    :param not_minus: quantity not min
+    :type not_minus: int
+    :param count_list: number for each cell
+    :type count_list: list
+    :param bomb_image: image
+    :type bomb_image: pygame.surface.Surface
+    :param button_image: image
+    :type button_image: pygame.surface.Surface
+    :param FPS: number of frames per second
+    :type FPS: int
+    :param Gray: color
+    :type Gray: tuple
+    :param Black: color
+    :type Black: tuple
+    :param FNT_number: font
+    :type FNT_number: pygame.font.Font
+    :param flag_states: index of each flag
+    :type flag_states: list
+    :param flag: image
+    :type flag: pygame.surface.Surface
+    :param screen: visible field
+    :type screen: pygame.surface.Surface"""
     global game_run
     global game_end
     global game_win
@@ -160,22 +219,22 @@ spawn = 0
 while game_menu:
     if spawn == 0:
         Window[1].fill(Gray)
-        Saper_message = FNT_text.render("MineSwipper", True, Black)
-        Start_message = FNT_restart.render("Start", True, Cian)
-        Setting_message = FNT_text.render("Setting", True, Black)
-        quit1_message = FNT_quit.render("Quit", True, Black)
-        history = FNT_text.render("History", True, Black)
+        Saper_message = FNT.render("MineSwipper", True, Black)
+        Start_message = FNT.render("Start", True, Cian)
+        Setting_message = FNT.render("Setting", True, Black)
+        quit1_message = FNT.render("Quit", True, Black)
+        history = FNT.render("History", True, Black)
         Start_rect = Start_message.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
         history_rect = history.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
         #Настройки
         Setting_message_rect = Setting_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +120))
         #Сложность
-        Complexity = FNT_text.render("Complexity:", True, Black)
-        light = FNT_text.render("Light", True, Black)
-        medium = FNT_text.render("Medium", True, Black)
-        hard = FNT_text.render("Hard", True, Black)
+        Complexity = FNT.render("Complexity:", True, Black)
+        light = FNT.render("Light", True, Black)
+        medium = FNT.render("Medium", True, Black)
+        hard = FNT.render("Hard", True, Black)
         #Назад
-        Back = FNT_text.render("Back", True, Black)
+        Back = FNT.render("Back", True, Black)
         #
         Complexity_rect = Complexity.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
         light_rect = light.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4 + 20, Window[0][1]//2-Window[0][1]//4 +80))
@@ -258,12 +317,10 @@ while game_menu:
 eteration = 1
 while game_end:
     if eteration == 1:
-        #count_spawn = 0
-        #if count_spawn == 0:
         Window[1].fill(Gray)
-        lose_message = FNT_text.render("You defeat!", True, Black)
-        restart_label = FNT_restart.render("Restart", True, Cian)
-        quit2_message = FNT_quit.render("Quit", True, Black)
+        lose_message = FNT.render("You defeat!", True, Black)
+        restart_label = FNT.render("Restart", True, Cian)
+        quit2_message = FNT.render("Quit", True, Black)
         restart_label_rect = restart_label.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
         quit2_message_rect = quit2_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
         Window[1].blit(lose_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
@@ -294,12 +351,10 @@ while game_end:
 
 while game_win:
     if eteration == 1:
-        #count_spawn = 0
-        #if count_spawn == 0:
         Window[1].fill(Gray)
-        Win_message = FNT_text.render("You WIN!", True, Black)
-        new_game_label = FNT_restart.render("New game", True, Cian)
-        quit3_message = FNT_quit.render("Quit", True, Black)
+        Win_message = FNT.render("You WIN!", True, Black)
+        new_game_label = FNT.render("New game", True, Cian)
+        quit3_message = FNT.render("Quit", True, Black)
         new_game_label_rect = new_game_label.get_rect(topleft =(Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +40))
         quit3_message_rect = quit3_message.get_rect(topleft = (Window[0][0]//2-Window[0][0]//4, Window[0][1]//2-Window[0][1]//4 +80))
         Window[1].blit(Win_message, (Window[0][0]//2-Window[0][0]//7, Window[0][1]//2-Window[0][1]//4))
