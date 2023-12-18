@@ -88,7 +88,7 @@ game_menu = True
 game_run = True
 game_end = True
 
-def run_game(button_rects, button_states, copy_button_slice, count_list, bomb_image, button_image, FPS, Gray, Black, FNT_number):
+def run_game(button_rects, button_states, copy_button_slice, count_list, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag):
     game_run = True
     global game_end
     global clock
@@ -110,13 +110,17 @@ def run_game(button_rects, button_states, copy_button_slice, count_list, bomb_im
                                 screen.blit(bomb_image, index)
                                 button_states = list(map(lambda x: False, button_states))
                                 game_run = False
-
-        for i, index in enumerate(copy_button_slice):
-            if button_states[i]:
-                screen.blit(bomb_image, index)
+                if event.button == 3:
+                    for i, index in enumerate(button_rects):
+                        if index.collidepoint(event.pos):
+                            if flag_states[i] == False:
+                                flag_states[i] = True
+                            else:
+                                flag_states[i] = False
+                                screen.blit(flag, index)
 
         for i, index in enumerate(button_rects):
-            if button_states[i]:
+            if button_states[i] and flag_states[i]:
                 screen.blit(button_image, index)
 
         pg.display.flip()
@@ -151,7 +155,7 @@ while game_menu:
                 screen.fill(Black)
                 copy_button_slice_c = get_shuffled_slice(button_rects)
                 count_list_c = count_neighbors(button_rects, copy_button_slice_c)
-                run_game(button_rects, button_states, copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number)
+                run_game(button_rects, button_states, copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag)
                 game_menu = False
 
 eteration = 1
@@ -181,11 +185,12 @@ while game_end:
             if quit2_message_rect.collidepoint(event.pos):
                 game_end = False
             if restart_label_rect.collidepoint(event.pos):
-				#Закинуть список бомб в функцию, закинуть счетчик в функцию, перезапустить их
+                screen.fill(Black)
                 eteration = 1
                 button_states = list(map(lambda x: True, button_states))
+                flag_states = list(map(lambda x: True, flag_states))
                 copy_button_slice_c = get_shuffled_slice(button_rects)
                 count_list_c = count_neighbors(button_rects, copy_button_slice_c)
-                run_game(button_rects, button_states, copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number)
+                run_game(button_rects, button_states, copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag)
 
 pg.quit()
