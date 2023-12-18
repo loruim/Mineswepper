@@ -17,31 +17,34 @@ Gray = (180, 180, 180)
 def Cell_quantity(Size):
     Cell_Qty = Size // 40
     return Cell_Qty #Кол-во полей в ряду
-Cell = Cell_quantity(Window[0][0])
+#Cell = Cell_quantity(Window[0][0])
 
 #Создание кнопки
 original_button_image = pg.image.load("image/empty_button.png")
 button_size = (40, 40)
 button_image = pg.transform.scale(original_button_image, button_size)
-button_rects = []
 
 #Бомбы
 original_bomb_image = pg.image.load("image/bomb.png")
 bomb_size = (40, 40)
 bomb_image = pg.transform.scale(original_bomb_image, bomb_size)
 
-for row in range (Cell):
-	for col in range (Cell):
-		button_rect = pg.Rect(col * 40, row * 40, 40, 40)
-		button_rects.append(button_rect)
+def number_spawn(Cells):
+    button_rects = []
+    for row in range (Cells):
+        for col in range (Cells):
+            button_rect = pg.Rect(col * 40, row * 40, 40, 40)
+            button_rects.append(button_rect)
+    button_states = [True] * len(button_rects)
+    flag_states = [True] * len(button_rects)
+    return button_rects, button_states, flag_states
 
-button_states = [True] * len(button_rects)
+#number = number_spawn(Cell)
 
 #Добавление флага
 original_flag = pg.image.load("image/flag.png")
 flag_size = (40, 40)
 flag = pg.transform.scale(original_flag, flag_size)
-flag_states = [True] * len(button_rects)
 
 #Сообщения проигрыша
 FNT_number = pg.font.Font(pg.font.get_default_font(), 20)
@@ -54,6 +57,7 @@ def get_shuffled_slice(original_list):
     copy_list = original_list.copy()
     shuffle(copy_list)
     sliced_copy = copy_list[:int(len(original_list)*0.2)]
+    print(sliced_copy)
     return sliced_copy
 
 clock = pg.time.Clock()
@@ -179,9 +183,11 @@ while game_menu:
                     game_end = False
                     game_menu = False
                 if Start_rect.collidepoint(event.pos):
-                    copy_button_slice_c = get_shuffled_slice(button_rects)
-                    count_list_c = count_neighbors(button_rects, copy_button_slice_c)
-                    run_game(button_rects, button_states, copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag, Window[1])
+                    Cell = Cell_quantity(Window[0][0])
+                    number = number_spawn(Cell)
+                    copy_button_slice_c = get_shuffled_slice(number[0])
+                    count_list_c = count_neighbors(number[0], copy_button_slice_c)
+                    run_game(number[0], number[1], copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
                     game_menu = False
                 if Setting_message_rect.collidepoint(event.pos):
                     Window[1].fill(Gray)
@@ -205,16 +211,19 @@ while game_menu:
                                     if light_rect.collidepoint(event.pos):
                                         Window = Windows(360, 360)
                                         Cell = Cell_quantity(Window[0][0])
+                                        number = number_spawn(Cell)
                                         spawn = 0
                                         wait += 1
                                     if medium_rect.collidepoint(event.pos):
                                         Window = Windows(600, 600)
                                         Cell = Cell_quantity(Window[0][0])
+                                        number = number_spawn(Cell)
                                         spawn = 0
                                         wait += 1
                                     if hard_rect.collidepoint(event.pos):
                                         Window = Windows(800, 800)
                                         Cell = Cell_quantity(Window[0][0])
+                                        number = number_spawn(Cell)
                                         spawn = 0
                                         wait += 1
                                         
@@ -247,11 +256,11 @@ while game_end:
                 if restart_label_rect.collidepoint(event.pos):
                     Window[1].fill(Black)
                     eteration = 1
-                    button_states = list(map(lambda x: True, button_states))
-                    flag_states = list(map(lambda x: True, flag_states))
                     game_run = True
-                    copy_button_slice_c = get_shuffled_slice(button_rects)
-                    count_list_c = count_neighbors(button_rects, copy_button_slice_c)
-                    run_game(button_rects, button_states, copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, flag_states, flag, Window[1])
+                    Cell = Cell_quantity(Window[0][0])
+                    number = number_spawn(Cell)
+                    copy_button_slice_c = get_shuffled_slice(number[0])
+                    count_list_c = count_neighbors(number[0], copy_button_slice_c)
+                    run_game(number[0], number[1], copy_button_slice_c, count_list_c, bomb_image, button_image, FPS, Gray, Black, FNT_number, number[2], flag, Window[1])
 
 pg.quit()
