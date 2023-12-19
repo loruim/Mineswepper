@@ -16,8 +16,8 @@ def Windows(Height, Width):
     :rtype screen: pygame.surface.Surface"""
     Window_size = (Height, Width)
     screen = pg.display.set_mode(Window_size)
-    pg.display.set_caption('Saper')
     return Window_size, screen
+pg.display.set_caption('Saper')
 Window = Windows(800, 800)
 
 Black = (0, 0, 0)
