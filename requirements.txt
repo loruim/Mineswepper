@@ -1,0 +1,23 @@
+"""
+Игровой движок на основе Pygame.
+
+Использует:
+- Pygame (версия 2.5.2): библиотека для создания 2D-игр, обеспечивает работу с графикой, звуком и управлением.
+
+Пример использования:
+1. Инициализация Pygame:
+   pygame.init()
+
+2. Создание окна:
+   screen = pygame.display.set_mode((800, 600))
+
+3. Загрузка изображения:
+   image = pygame.image.load('example.png')
+
+4. Ожидание событий:
+   for event in pygame.event.get():
+       if event.type == pygame.QUIT:
+           pygame.quit()
+"""
+
+import pygame
